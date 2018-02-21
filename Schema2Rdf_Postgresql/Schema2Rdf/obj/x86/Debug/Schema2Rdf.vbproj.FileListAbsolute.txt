@@ -1,0 +1,18 @@
+c:\users\yaser\documents\visual studio 2010\Projects\Schema2Rdf\Schema2Rdf\bin\Debug\Schema2Rdf.exe
+c:\users\yaser\documents\visual studio 2010\Projects\Schema2Rdf\Schema2Rdf\bin\Debug\Schema2Rdf.pdb
+c:\users\yaser\documents\visual studio 2010\Projects\Schema2Rdf\Schema2Rdf\bin\Debug\Schema2Rdf.xml
+c:\users\yaser\documents\visual studio 2010\Projects\Schema2Rdf\Schema2Rdf\obj\x86\Debug\ResolveAssemblyReference.cache
+c:\users\yaser\documents\visual studio 2010\Projects\Schema2Rdf\Schema2Rdf\obj\x86\Debug\Schema2Rdf.Form1.resources
+c:\users\yaser\documents\visual studio 2010\Projects\Schema2Rdf\Schema2Rdf\obj\x86\Debug\Schema2Rdf.Resources.resources
+c:\users\yaser\documents\visual studio 2010\Projects\Schema2Rdf\Schema2Rdf\obj\x86\Debug\GenerateResource.read.1.tlog
+c:\users\yaser\documents\visual studio 2010\Projects\Schema2Rdf\Schema2Rdf\obj\x86\Debug\GenerateResource.write.1.tlog
+c:\users\yaser\documents\visual studio 2010\Projects\Schema2Rdf\Schema2Rdf\obj\x86\Debug\Schema2Rdf.exe
+c:\users\yaser\documents\visual studio 2010\Projects\Schema2Rdf\Schema2Rdf\obj\x86\Debug\Schema2Rdf.xml
+c:\users\yaser\documents\visual studio 2010\Projects\Schema2Rdf\Schema2Rdf\obj\x86\Debug\Schema2Rdf.pdb
+C:\Users\Yaser\Documents\Visual Studio 2010\Projects\Schema2Rdf\Schema2Rdf\bin\Debug\system.data.oracleclient.dll
+C:\Users\Yaser\Documents\Visual Studio 2010\Projects\Schema2Rdf\Schema2Rdf\bin\Debug\Schema2Rdf.exe.config
+C:\Users\Yaser\Documents\Visual Studio 2010\Projects\Schema2Rdf\Schema2Rdf\obj\x86\Debug\Schema2Rdf.timing.resources
+C:\Users\Yaser\Documents\Visual Studio 2010\Projects\Schema2Rdf - postgresql\Schema2Rdf\Schema2Rdf\bin\Debug\Schema2Rdf.exe.config
+C:\Users\Yaser\Documents\Visual Studio 2010\Projects\Schema2Rdf - postgresql\Schema2Rdf\Schema2Rdf\obj\x86\Debug\Schema2Rdf.exe
+C:\Users\Yaser\Documents\Visual Studio 2010\Projects\Schema2Rdf - postgresql\Schema2Rdf\Schema2Rdf\obj\x86\Debug\Schema2Rdf.xml
+C:\Users\Yaser\Documents\Visual Studio 2010\Projects\Schema2Rdf - postgresql\Schema2Rdf\Schema2Rdf\obj\x86\Debug\Schema2Rdf.pdb

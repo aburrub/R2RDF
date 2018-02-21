@@ -1,0 +1,226 @@
+﻿Imports Devart.Data.PostgreSql
+Public Class dbSchema
+    Private relations As New List(Of association)
+    Private AbstractionsRelations As New List(Of relation)
+    Private connectionString As String
+    Private _connection As PgSqlConnection = Nothing
+    Private tables As New Hashtable
+    Public Sub New()
+
+    End Sub
+    'postgres,postgres, 127.0.0.1, 5432, hr
+    Public Sub New(ByVal db_user_id As String, ByVal db_user_password As String, ByVal db_host As String, ByVal db_port As String, ByVal db_name As String)
+        Me.connectionString = "User ID=" + db_user_id + ";Password=" + db_user_password + ";Host=" + db_host + ";Port=" + db_port + ";Database=" + db_name + "; Pooling=true;Min Pool Size=0;Max Pool Size=100;Connection Lifetime=0;Unicode=True"
+    End Sub
+
+    Public Sub setConnection(ByVal db_user_id As String, ByVal db_user_password As String, ByVal db_host As String, ByVal db_port As String, ByVal db_name As String)
+        Me.connectionString = "User ID=" + db_user_id + ";Password=" + db_user_password + ";Host=" + db_host + ";Port=" + db_port + ";Database=" + db_name + "; Pooling=true;Min Pool Size=0;Max Pool Size=100;Connection Lifetime=0;Unicode=True"
+    End Sub
+
+    Public Function openConnection() As Boolean
+        Try
+            Me._connection = New PgSqlConnection()
+            Me._connection.ConnectionString = Me.connectionString
+            Me._connection.Open()
+            Return True
+        Catch ex As Exception
+            Return False
+        End Try
+    End Function
+
+    Private Function getPrimaryKeyColumnFromPrimaryKeyName(ByRef primaryKeyRow As DataRow) As List(Of String)
+        Dim PrimaryKeyColumnNameFromSchemaIndex As Integer = 3
+        Dim PrimaryKeyNameFromSchemaIndex As Integer = 0
+        Dim result As New List(Of String)
+        Dim IndexColumnsFromSchema As DataTable
+        Dim primaryKeyName As String
+        Dim primaryKeyColumnName As String
+        Dim IndexColumnsRestriction(2) As String
+        primaryKeyName = primaryKeyRow.ItemArray(PrimaryKeyNameFromSchemaIndex).ToString
+        IndexColumnsRestriction(2) = primaryKeyName
+        IndexColumnsFromSchema = Me._connection.GetSchema(RestrictionName.IndexColumns.ToString, IndexColumnsRestriction)
+        For Each row As DataRow In IndexColumnsFromSchema.Rows
+            primaryKeyColumnName = row.ItemArray(PrimaryKeyColumnNameFromSchemaIndex).ToString()
+            result.Add(primaryKeyColumnName.ToLower)
+        Next
+
+
+        Return result
+    End Function
+    Private Function getForeinKeyColumnFromPrimaryKeyName(ByRef foreignKeyRow As DataRow) As dbfk
+        Dim foreignKeyName As String
+        Dim foreignKeyColumnName As String
+        Dim foreignKeyTableName As String
+
+        Dim rest(2) As String
+
+        Dim foreignKeyNameFromSchemaIndex As Integer = 0
+        Dim foreignKeyTableNameFromSchemaIndex As Integer = 5
+        Dim foreignKeyColumnNameFromSchemaIndex As Integer = 4
+
+        foreignKeyName = foreignKeyRow.ItemArray(foreignKeyNameFromSchemaIndex).ToString()
+        foreignKeyTableName = foreignKeyRow.ItemArray(foreignKeyTableNameFromSchemaIndex).ToString()
+
+        Dim foreignKeyColSchema As DataTable
+        rest(2) = foreignKeyName
+        foreignKeyColSchema = Me._connection.GetSchema(RestrictionName.ForeignKeyColumns.ToString, rest)
+        foreignKeyColumnName = foreignKeyColSchema.Rows(0).ItemArray(foreignKeyColumnNameFromSchemaIndex).ToString
+
+        Return New dbfk(foreignKeyName.ToLower, foreignKeyColumnName.ToLower, foreignKeyTableName.ToLower)
+    End Function
+    Public Function GenerateTablesDetails() As Boolean
+        Try
+            Dim TableFieldFromSchemaIndex As Integer = 2
+
+            Dim tableName As String
+            Dim tableRestrictions(2) As String
+            Dim tablesFromSchema As DataTable
+            Dim primaryKeysFromSchema As DataTable
+            Dim foreignKeysFromSchema As DataTable
+
+            ' primary key related
+            Dim primaryKeyRestriction(2) As String
+            Dim foreignKeyRestriction(2) As String
+
+
+            tablesFromSchema = Me._connection.GetSchema(RestrictionName.Tables.ToString, tableRestrictions)
+            For Each tableRow As DataRow In tablesFromSchema.Rows
+                
+                tableName = tableRow.ItemArray(TableFieldFromSchemaIndex).ToString
+                Dim tableObj As New dbtable(tableName.ToLower)
+
+                primaryKeyRestriction(1) = tableName ' for each table we should get primary keys
+                primaryKeysFromSchema = Me._connection.GetSchema(RestrictionName.PrimaryKeys.ToString, primaryKeyRestriction)
+                ' save primarykey columns
+                For Each primaryKeyRow As DataRow In primaryKeysFromSchema.Rows
+                    For Each pk As String In getPrimaryKeyColumnFromPrimaryKeyName(primaryKeyRow)
+                        tableObj.appendKey(TableFieldType.PRIMARY_KEY, pk)
+                    Next
+                Next
+
+                foreignKeyRestriction(1) = tableName ' for each table we should get primary keys
+                foreignKeysFromSchema = _connection.GetSchema(RestrictionName.ForeignKeys.ToString, foreignKeyRestriction)
+
+                For Each foreignRow As DataRow In foreignKeysFromSchema.Rows
+                    tableObj.appendFK(TableFieldType.FOREIGN_KEY, getForeinKeyColumnFromPrimaryKeyName(foreignRow))
+                Next
+
+                ' set other fields
+                Dim columnsSchema As DataTable
+                Dim colIndex As Integer = 2
+                Dim colName As String
+                Dim columRest(2) As String
+                columRest(1) = tableName
+                columnsSchema = _connection.GetSchema(RestrictionName.Columns.ToString, columRest)
+                For Each row As DataRow In columnsSchema.Rows
+                    colName = row.ItemArray(colIndex).ToString
+                    If Not (tableObj.hasField(TableFieldType.PRIMARY_KEY, colName) Or tableObj.hasField(TableFieldType.FOREIGN_KEY, colName)) Then
+                        tableObj.appendKey(TableFieldType.NORMAL_COLUMN, colName)
+                    End If
+                Next
+
+                tableObj.SetEntityTable()
+                tables.Add(tableObj.NAME, tableObj)
+            Next
+            Return True
+        Catch ex As Exception
+            Return False
+        End Try
+    End Function
+    Public Function GetTable(ByRef tableName As String) As dbtable
+        Return CType(Me.tables(tableName), dbtable)
+    End Function
+
+    Public Function GetTables() As Hashtable
+        Return Me.tables
+    End Function
+
+    Public ReadOnly Property CONNECTION() As PgSqlConnection
+        Get
+            Return Me._connection
+        End Get
+    End Property
+
+    Public Sub findAllAssociations()
+
+        Dim pk_length As Integer = 0
+        Dim associationFlag As Boolean
+        Dim e2e As Boolean
+        For Each tbl As dbtable In Me.tables.Values
+
+            ' establish an association between an entity and the entity corresponding to each foreign key, unless it also happens to be a part of the primary key
+            If tbl.IS_ENTITY_TABLE And Not tbl.FKs Is Nothing Then
+                For Each fk As dbfk In tbl.FKs
+                    e2e = True
+                    For Each pk As String In tbl.PKs
+                        If fk.FOREIGNKEY = pk Then
+                            e2e = False
+                            Exit For
+                        End If
+                    Next
+                    If e2e Then
+                        addNewAssociation(New association(tbl.NAME, fk.FK_TABLE)) 'Me.relations.Add(New association(tbl.NAME, fk.FK_TABLE))
+                    End If
+                Next
+            End If
+            ' end of entity-2-entity association
+
+            associationFlag = True
+            pk_length = tbl.COUNT(TableFieldType.PRIMARY_KEY)
+            If pk_length > 1 Then
+                ' check if all parts of primaryKey is also in foreignKey
+                For Each pk_part As String In tbl.PKs
+                    If Not tbl.hasField(TableFieldType.FOREIGN_KEY, pk_part) Then
+                        associationFlag = False
+                    End If
+                Next
+
+                If associationFlag Then
+                    For Each fk As dbfk In tbl.FKs  ' every table whose primary key has more than one attribute and is entirely composed of foreign key represents an association between all the entities corresponding to the foreign keys
+                        For Each s_t As dbtable In Me.tables.Values
+                            If Not (s_t.NAME = tbl.NAME) And s_t.IS_ENTITY_TABLE Then
+                                If s_t.hasField(TableFieldType.FOREIGN_KEY, fk.FOREIGNKEY) Then
+                                    Me.addNewAssociation(New association(fk.FK_TABLE, s_t.NAME)) 'relations.Add(New association(fk.FK_TABLE, s_t.NAME))
+                                End If
+                            End If
+                        Next
+                    Next
+                End If
+            Else
+                ' here we will check is-a relaton
+                Dim pk As String = tbl.PKs(0)
+                For Each t1 As dbtable In Me.tables.Values
+                    If Not (t1.NAME = tbl.NAME) Then
+
+                        If t1.hasField(TableFieldType.PRIMARY_KEY, pk) And t1.hasField(TableFieldType.FOREIGN_KEY, pk) And t1.IS_ENTITY_TABLE Then
+                            Me.AbstractionsRelations.Add(New relation(tbl.NAME, t1.NAME, RelationType.IS_A_RELATION))
+                            Exit For
+                        End If
+                    End If
+                Next
+
+            End If
+
+        Next
+    End Sub
+    ' check if relation entry is already in relations
+
+    Private Function addNewAssociation(ByVal assParam As association) As Boolean
+        Dim flg As Boolean
+        For Each assObj As association In Me.relations
+            flg = (assObj.TABLE1 = assParam.TABLE1) And (assObj.TABLE2 = assParam.TABLE2)
+            If Not flg Then
+                flg = (assObj.TABLE1 = assParam.TABLE2) And (assObj.TABLE2 = assParam.TABLE1)
+            End If
+            If flg Then
+                Exit For
+            End If
+        Next
+        If Not flg Then
+            Me.relations.Add(assParam)
+            Return True
+        Else
+            Return False
+        End If
+    End Function
+End Class

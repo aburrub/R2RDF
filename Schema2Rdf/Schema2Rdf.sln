@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "Schema2Rdf", "Schema2Rdf\Schema2Rdf.vbproj", "{A554CB51-F2AB-4B93-AE55-D5674E75D4B1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F973864B-CCE0-44F3-9AEF-20FA49F958EF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A554CB51-F2AB-4B93-AE55-D5674E75D4B1}.Debug|x86.ActiveCfg = Debug|x86
+		{A554CB51-F2AB-4B93-AE55-D5674E75D4B1}.Debug|x86.Build.0 = Debug|x86
+		{A554CB51-F2AB-4B93-AE55-D5674E75D4B1}.Release|x86.ActiveCfg = Release|x86
+		{A554CB51-F2AB-4B93-AE55-D5674E75D4B1}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

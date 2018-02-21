@@ -1,0 +1,4 @@
+/*dbschema, table, field, newFieldName*/
+hr, employee, id, newid
+hr, employee, last_name, family_name
+sampledb, account, accountid, account_id
